@@ -15,11 +15,15 @@ int closestValue;
 int closestX;
 int closestY;
 
+//hand tracking
+float lastX;
+float lastY;
+
 //array for tiles
 int [] tiles; 
 
 //array for images
-int numImages = 8;
+int numImages = 11;
 PImage [] images = new PImage[numImages];
 
 //getting hand coordinates
@@ -37,21 +41,18 @@ int column;
 int row;
 int cnt = 0;
 
-//hand tracking
-float lastX;
-float lastY;
 
 //check if image is moving or not and if hands are in right position
 boolean imageMoving;
-boolean handCoord;
+//boolean handCoord;
 
 
 
 void setup()
 {
   size(1280, 960);
-  frameRate(24);
-  smooth();
+//  frameRate(24);
+//  smooth();
   
   kinect = new SimpleOpenNI(this);
   kinect.enableDepth();   
@@ -61,7 +62,7 @@ void setup()
   imageMoving = true;
   
   tileSize = 300;
-  margin = 10;
+  margin = 20;
   column = (width-margin)/tileSize; 
   row = (height-margin)/tileSize;
   
@@ -77,39 +78,31 @@ void setup()
   images[5] = loadImage("render_mainbuilding.png");
   images[6] = loadImage("mithraeum.jpg");
   images[7] = loadImage("download.jpg");
+  images[8] = loadImage("one.png");
+  images[9] = loadImage("two.png");
+  images[10] = loadImage("three.png");
   
 }
 
 void draw()
 {
-   // clear the previous drawing
   background(0);
   closestValue = 8000;
   kinect.update();
   
-  
-////this from for (int col =0 to cnt = 0; only displays the very last image from the array, but it does have a grid
-  for (int col= 0; col<=column; col++)
+//prints images in a grid
+ for (int col= 0; col<=column; col++)
   {
     for (int r=0; r<=row; r++)
-    {
-      for (int i=0; i<images.length; i++)
-      {
-  
-      //  for image in images[] print one per tile
-        image(images[0], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[1], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[2], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[3], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[4], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[5], (col*tileSize), (r*tileSize), tileSize, tileSize);
-        image(images[6], (col*tileSize), (r*tileSize), tileSize, tileSize); 
-        image(images[7], (col*tileSize), (r*tileSize), tileSize, tileSize);  //only printing this one
-    }     
+    {  
+        int whichImage = col*row+r;
+        whichImage %= 11;
+        image(images[whichImage], (col*tileSize), (r*tileSize), tileSize, tileSize);   
     }
     }
   
   
+  //better so it doesn't look like a grid, but it needs work to put images in correct coordinates
 //  for (int i = 0; i<images.length; i++)
 //  {
 //    
@@ -152,27 +145,28 @@ void draw()
    // only update image position
    // if image is in moving state
    
-  if (handCoordX == 640 && handCoordY == 480) 
-  {
-    handCoord = true;
-  }
-  else handCoord = false;
-  
-   if (secondHold > 1 && handCoord != false)
+//  if (handCoordX == 640 && handCoordY == 480) 
+//  {
+//    handCoord = true;
+//  }
+//  else handCoord = false;
+//  
+//   if (secondHold > 1 && handCoord != false)
+//   {
+//      if(imageMoving)
+//      {
+//       imageX = interpolatedX;
+//       imageY = interpolatedY; 
+//      }
+//   }
+   
+   if(imageMoving)
    {
-      if(imageMoving)
-      {
-       imageX = interpolatedX;
-       imageY = interpolatedY; 
-      }
+     imageX = interpolatedX;
+     imageY = interpolatedY;
    }
    
-   
-     if (handCoordX == 100 && handCoordY == 100) 
-  {
-    handCoord = true;
-  }
-  else handCoord = false;
+   image(images[9], imageX, imageY);
   
  
   
