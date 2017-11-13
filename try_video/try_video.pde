@@ -7,7 +7,10 @@ Once in the center, the image/video/content should be enlarged and display extra
 Can it do a video? <--Reminder: Check making things see book
 */
 import SimpleOpenNI.*;
+//import processing.video.*;
 SimpleOpenNI kinect;
+
+//Movie exampleMovie;
 
 //.shift for full screen
 
@@ -47,21 +50,22 @@ boolean handCoord;
 
 void setup()
 {
-// Previous: size(1280, 960); but better to use size(displayWidth, displayHeight)? 
-//also need to think about using a projector--can change Friday if current doesn't work. 
-  size(displayWidth, displayHeight);
+  size(1280, 960);
   frameRate(24);
   smooth();
   
+  //does this work for movie? <-- No it won't. PImage Array can't support a movie upload...but possible to store a movie somewhere else?
+ // exampleMovie = new Movie(this, "find a movie and its path");
+  //exampleMovie.loop();
+  
   kinect = new SimpleOpenNI(this);
   kinect.enableDepth();   
- 
-  // start the image out moving so mouse press will drop it
+   
+ // start the image out moving so mouse press will drop it
   imageMoving = true;
   
-  //setting up the grid--look for a 'snap to grid' or clamp to screen size
-  //probably shouldn't repeat...look for a better way to do grid
-  tileSize = 350;
+  //setting up the grid
+  tileSize = 300;
   margin = 20;
   column = (width-margin)/tileSize; 
   row = (height-margin)/tileSize;
@@ -80,6 +84,11 @@ void setup()
   images[9] = loadImage("two.png");
   images[10] = loadImage("three.png");
   
+  //user tracking
+// kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
+  kinect.enableUser();
+  
+  
 }
 
 void draw()
@@ -89,9 +98,28 @@ void draw()
   closestValue = 8000;
   kinect.update();
   
- //max=l&w of screen (1280, 960)
+  //VECTOR Of ints to store list of user
+  IntVector userList = new IntVector();
+  kinect.getUsers(userList);
   
-//HURRAY WORKING!!! prints images in a grid. One image per tile. NEED TO TIDY UP GRID SO IT MAPS THE SCREEN
+  if (userList.size()>0)
+  {
+    //first user
+    int userID = userList.get(0);
+    
+    if (kinect.isTrackingSkeleton(userID))
+    {
+      PVector rightHand = new PVector();
+      
+      float confidence = kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_HAND, rightHand);
+      
+      PVector convertedRightHand = new PVector();
+      kinect.convertRealWorldToProjective(rightHand, convertedRightHand);
+      fill(255, 0,0);
+      ellipse(convertedRightHand.x, convertedRightHand.y, 10,10);
+    }
+  }
+//prints images in a grid. One image per tile. NEED TO TIDY UP GRID SO IT MAPS THE SCREEN
  for (int col= 0; col<=column; col++)
   {
     for (int r=0; r<=row; r++)
@@ -121,7 +149,7 @@ void draw()
  
   int[] depthValues = kinect.depthMap();
   
-  //what is this doing? --if x and y coordinates are a certain value, then it matches the hand for elipse? ASK TOM
+  //what is this doing? --if x and y coordinates are a certain value, then it matches the hand (for elipse? ASK TOM
   //out of bounds if y and x = size of screen
     for(int y = 0; y < 480; y++)
     {
@@ -132,10 +160,9 @@ void draw()
         int i = reversedX + y * 640;
         int currentDepthValue = depthValues[i];
       
-      //these were changed at one point....what is this doing? 
         if(currentDepthValue > 610 && currentDepthValue < 1525 && currentDepthValue < closestValue)
         {
-          
+
           closestValue = currentDepthValue;
           closestX = x;
           closestY = y;
@@ -147,31 +174,30 @@ void draw()
    float interpolatedX = lerp(lastX, closestX, 0.3);   
    float interpolatedY = lerp(lastY, closestY, 0.3);
   
-   // only update image position if image is in moving state
-//hand tracking is bound by images[9]...change this? 
-
-//hand tracking is also backwards...LOOK INTO SKELTAL TRACKING AND MAPPING OF HANDS
-  if (handCoordX == 640 && handCoordY == 480) 
-  {
-    handCoord = true;
-  }
-  else handCoord = false;
-  
-   if (secondHold > 1 && handCoord != false)
-   {
-      if(imageMoving)
-      {
-       imageX = interpolatedX;
-       imageY = interpolatedY; 
-      }
-   }
+   // only update image position
+   // if image is in moving state
+   
+//  if (handCoordX == 640 && handCoordY == 480) 
+//  {
+//    handCoord = true;
+//  }
+//  else handCoord = false;
+//  
+//   if (secondHold > 1 && handCoord != false)
+//   {
+//      if(imageMoving)
+//      {
+//       imageX = interpolatedX;
+//       imageY = interpolatedY; 
+//      }
+//   }
    
    //If the image is moving, it should store image in the last place the hand coords were mapped
-//   if(imageMoving)
-//   {
-//     imageX = interpolatedX;
-//     imageY = interpolatedY;
-//   }
+   if(imageMoving)
+   {
+     imageX = interpolatedX;
+     imageY = interpolatedY;
+   }
    
    //this brings image 10 to the last place...however this should be whatever image is grabbed...how to do this? images[diffImage]? TRY 
    //Draw image to screen
@@ -191,9 +217,10 @@ void draw()
    lastY = interpolatedY;
 
 //tracks hand movement...or should. VERY CHOPPY, FIGURE OUT HOW TO SMOOTH and accuratley track hand
- fill(255,0,0);
- ellipse(closestX, closestY, 25, 25);
+// fill(255,0,0);
+// ellipse(closestX, closestY, 25, 25);
 
    
 }
+
 
