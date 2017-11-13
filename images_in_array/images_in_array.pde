@@ -5,6 +5,8 @@ the middle of the screen).
 Once in the center, the image/video/content should be enlarged and display extra details
 
 Can it do a video? <--Reminder: Check making things see book
+
+What about uploading a game? Check Unity plugin to work with SpaceShooter...forward motion = shoot bullet?
 */
 import SimpleOpenNI.*;
 SimpleOpenNI kinect;
@@ -47,20 +49,22 @@ boolean handCoord;
 
 void setup()
 {
-// Previous: size(1280, 960); but better to use size(displayWidth, displayHeight)? 
+// Previous: size(1280, 960); BUT I like this better because fullscreen
 //also need to think about using a projector--can change Friday if current doesn't work. 
   size(displayWidth, displayHeight);
+  
+  //check what frame rate and smooth are doing, doesn't help with hand tracking-I think this was for when it was looping through the array on an individual grid tile
   frameRate(24);
   smooth();
   
   kinect = new SimpleOpenNI(this);
   kinect.enableDepth();   
  
-  // start the image out moving so mouse press will drop it
+  // start the image out moving so mouse press will drop it--OR is it better to start static, then when hold for seconds start to move? 
   imageMoving = true;
   
   //setting up the grid--look for a 'snap to grid' or clamp to screen size
-  //probably shouldn't repeat...look for a better way to do grid
+  //probably shouldn't repeat images...look for a better way to do grid
   tileSize = 350;
   margin = 20;
   column = (width-margin)/tileSize; 
@@ -68,6 +72,7 @@ void setup()
   
    
   // load the image from a file--BETTER IN AN ARRAY LIST?--STILL NEED TO DEFINE THE LOAD, BUT EASIER TO UPLOAD CONTENT?
+  //ALSO check about uploading movies and 3D content to 'move through'
   images[0] = loadImage("farm.png");
   images[1] = loadImage("mainb.jpg");
   images[2] = loadImage("well.png");
@@ -78,19 +83,19 @@ void setup()
   images[7] = loadImage("download.jpg");
   images[8] = loadImage("one.png");
   images[9] = loadImage("two.png");
-  images[10] = loadImage("three.png");
-  
+  images[10] = loadImage("three.png"); 
 }
 
 void draw()
 {
-  //do I want this to change to map a person? Probably not. 
+  //do I want this to change to map a person? Probably not..just movement of hand with ellipse. Plain background works fine, no need to draw body
   background(0);
+  
+  //what is this? try and change to see what happens
   closestValue = 8000;
   kinect.update();
   
  //max=l&w of screen (1280, 960)
-  
 //HURRAY WORKING!!! prints images in a grid. One image per tile. NEED TO TIDY UP GRID SO IT MAPS THE SCREEN
  for (int col= 0; col<=column; col++)
   {
@@ -121,7 +126,7 @@ void draw()
  
   int[] depthValues = kinect.depthMap();
   
-  //what is this doing? --if x and y coordinates are a certain value, then it matches the hand for elipse? ASK TOM
+  //what is this doing? --if x and y coordinates are a certain value, then it matches the hand for elipse? 
   //out of bounds if y and x = size of screen
     for(int y = 0; y < 480; y++)
     {
@@ -135,7 +140,7 @@ void draw()
       //these were changed at one point....what is this doing? 
         if(currentDepthValue > 610 && currentDepthValue < 1525 && currentDepthValue < closestValue)
         {
-          
+          //matching the closest value and depth value to hand?
           closestValue = currentDepthValue;
           closestX = x;
           closestY = y;
@@ -143,11 +148,12 @@ void draw()
         }
       }
     }
+    
 //this gets the last place the hand is. 
    float interpolatedX = lerp(lastX, closestX, 0.3);   
    float interpolatedY = lerp(lastY, closestY, 0.3);
   
-   // only update image position if image is in moving state
+// only update image position if image is in moving state
 //hand tracking is bound by images[9]...change this? 
 
 //hand tracking is also backwards...LOOK INTO SKELTAL TRACKING AND MAPPING OF HANDS
@@ -173,12 +179,12 @@ void draw()
 //     imageY = interpolatedY;
 //   }
    
-   //this brings image 10 to the last place...however this should be whatever image is grabbed...how to do this? images[diffImage]? TRY 
+   //this brings images[9] to the last place the hand was (well or to the 640/480 place...however this should be whatever image is grabbed...how to do this? images[diffImage]? TRY 
    //Draw image to screen
    image(images[9], imageX, imageY);
   
  
-  //WHY?? ASK TOM. This does not make sense...
+  //WHY?? This does not make sense...
   //WANT: if the image is not moving and hold for more than one second then move the image to where hand coord is last mapped
   //so...TRY..if (!imageMoving && secondHold >1)? 
   if(imageMoving = !imageMoving && secondHold >1)
