@@ -1,6 +1,10 @@
-/* We want a program that will display images of various projects on a wall. The eclipse tracks hand movement.  
+/* We want a program that will display images of various projects, people, events on a wall. 
+The eclipse tracks hand movement.  
 The user will move their hand to an image hold for a second and then be able to pull the image where they want (i.e. 
 the middle of the screen). 
+Once in the center, the image/video/content should be enlarged and display extra details
+
+Can it do a video? <--Reminder: Check making things see book
 */
 import SimpleOpenNI.*;
 SimpleOpenNI kinect;
@@ -19,9 +23,6 @@ int closestY;
 float lastX;
 float lastY;
 
-//array for tiles
-int [] tiles; 
-
 //array for images
 int numImages = 11;
 PImage [] images = new PImage[numImages];
@@ -39,26 +40,23 @@ int tileSize;
 int margin;
 int column;
 int row;
-int cnt = 0;
+
 
 
 //check if image is moving or not and if hands are in right position
 boolean imageMoving;
-//boolean handCoord;
-
-
+boolean handCoord;
 
 void setup()
 {
   size(1280, 960);
-//  frameRate(24);
-//  smooth();
+  frameRate(24);
+  smooth();
   
   kinect = new SimpleOpenNI(this);
   kinect.enableDepth();   
  
-  // start the image out moving
-  // so mouse press will drop it
+  // start the image out moving so mouse press will drop it
   imageMoving = true;
   
   tileSize = 300;
@@ -86,23 +84,24 @@ void setup()
 
 void draw()
 {
+  //do I want this to change to map a person? Probably not. 
   background(0);
   closestValue = 8000;
   kinect.update();
   
-//prints images in a grid
+//prints images in a grid. One image per tile. NEED TO TIDY UP GRID SO IT MAPS THE SCREEN
  for (int col= 0; col<=column; col++)
   {
     for (int r=0; r<=row; r++)
     {  
-        int whichImage = col*row+r;
-        whichImage %= 11;
-        image(images[whichImage], (col*tileSize), (r*tileSize), tileSize, tileSize);   
+        int diffImage = col*row+r;
+        diffImage %= 11;
+        image(images[diffImage], (col*tileSize), (r*tileSize), tileSize, tileSize);   
     }
     }
   
   
-  //better so it doesn't look like a grid, but it needs work to put images in correct coordinates
+  //better so it doesn't look like a grid, but it needs work to put images in correct coordinates and scale down images
 //  for (int i = 0; i<images.length; i++)
 //  {
 //    
@@ -118,7 +117,7 @@ void draw()
   
  
   int[] depthValues = kinect.depthMap();
-  
+  //what is this doing? --if x and y coordinates are a certain value, then it matches the hand (for elipse? ASK TOM
     for(int y = 0; y < 480; y++)
     {
       for(int x = 0; x < 640; x++)
@@ -138,7 +137,7 @@ void draw()
         }
       }
     }
-
+//this gets the last place the hand is. 
    float interpolatedX = lerp(lastX, closestX, 0.3);   
    float interpolatedY = lerp(lastY, closestY, 0.3);
   
@@ -160,26 +159,29 @@ void draw()
 //      }
 //   }
    
+   //If the image is moving, it should store image in the last place the hand coords were mapped
    if(imageMoving)
    {
      imageX = interpolatedX;
      imageY = interpolatedY;
    }
    
+   //this brings image 10 to the last place...however this should be whatever image is grabbed...how to do this? images[diffImage]? TRY 
+   //Draw image to screen
    image(images[9], imageX, imageY);
   
  
-  
+  //WHY?? ASK TOM. This does not make sense...WANT: if the image is not moving and hold for more than one second then move the image
+  //so...if (!imageMoving && secondHold >1)? TRY
   if(imageMoving = !imageMoving && secondHold >1)
   {
    imageMoving = !imageMoving;
   }
-   //if has gesture movement then get img 
+   //if has gesture movement then get img --DON'T WORRY ABOUT GESTURES FOR NOW. JUST MOVE IMAGE TO LAST PLACE HAND WAS--MIDDLE SCREEN
    //
-   //draw the image on the screen
-  // image(image1,image1X/2,image1Y/2);
-   //draing overtop
- //  image(image2, image2X/2, image2Y/2);
+   //draw the image on the screen--MOVE THIS ABOVE
+  // image(image1,imageX/2,imageY/2);
+ 
 
    lastX = interpolatedX;
    lastY = interpolatedY;
