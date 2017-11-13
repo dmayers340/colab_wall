@@ -23,7 +23,7 @@ int closestY;
 float lastX;
 float lastY;
 
-//array for images
+//array for images--better as arraylist?? but then numImages is used to make the grid below
 int numImages = 11;
 PImage [] images = new PImage[numImages];
 
@@ -41,8 +41,6 @@ int margin;
 int column;
 int row;
 
-
-
 //check if image is moving or not and if hands are in right position
 boolean imageMoving;
 boolean handCoord;
@@ -59,15 +57,14 @@ void setup()
   // start the image out moving so mouse press will drop it
   imageMoving = true;
   
+  //setting up the grid
   tileSize = 300;
   margin = 20;
   column = (width-margin)/tileSize; 
   row = (height-margin)/tileSize;
   
-  
-  
- 
-  // load the image from a file
+   
+  // load the image from a file--BETTER IN AN ARRAY LIST?--STILL NEED TO DEFINE THE LOAD, BUT EASIER TO UPLOAD CONTENT?
   images[0] = loadImage("farm.png");
   images[1] = loadImage("mainb.jpg");
   images[2] = loadImage("well.png");
@@ -95,7 +92,8 @@ void draw()
     for (int r=0; r<=row; r++)
     {  
         int diffImage = col*row+r;
-        diffImage %= 11;
+        diffImage %= numImages; 
+        //image will be in the array, with x coord, y coord, width, height
         image(images[diffImage], (col*tileSize), (r*tileSize), tileSize, tileSize);   
     }
     }
@@ -117,7 +115,9 @@ void draw()
   
  
   int[] depthValues = kinect.depthMap();
+  
   //what is this doing? --if x and y coordinates are a certain value, then it matches the hand (for elipse? ASK TOM
+  //out of bounds if y and x = size of screen
     for(int y = 0; y < 480; y++)
     {
       for(int x = 0; x < 640; x++)
@@ -171,21 +171,19 @@ void draw()
    image(images[9], imageX, imageY);
   
  
-  //WHY?? ASK TOM. This does not make sense...WANT: if the image is not moving and hold for more than one second then move the image
-  //so...if (!imageMoving && secondHold >1)? TRY
+  //WHY?? ASK TOM. This does not make sense...
+  //WANT: if the image is not moving and hold for more than one second then move the image to where hand coord is last mapped
+  //so...TRY..if (!imageMoving && secondHold >1)? 
   if(imageMoving = !imageMoving && secondHold >1)
   {
    imageMoving = !imageMoving;
   }
    //if has gesture movement then get img --DON'T WORRY ABOUT GESTURES FOR NOW. JUST MOVE IMAGE TO LAST PLACE HAND WAS--MIDDLE SCREEN
-   //
-   //draw the image on the screen--MOVE THIS ABOVE
-  // image(image1,imageX/2,imageY/2);
  
-
    lastX = interpolatedX;
    lastY = interpolatedY;
 
+//tracks hand movement...or should. VERY CHOPPY, FIGURE OUT HOW TO SMOOTH and accuratley track hand
  fill(255,0,0);
  ellipse(closestX, closestY, 25, 25);
 
